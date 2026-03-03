@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Spaghetti Wave — Fractal-X Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f0f0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #000;
+            overflow-x: hidden;
+        }
+
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 10px;
+            background: #e8e8e8;
+            border-bottom: 1px solid #999;
+        }
+
+        #header .left {
+            font-weight: bold;
+        }
+
+        #header .right {
+            text-align: right;
+        }
+
+        #main-container {
+            display: flex;
+            width: 100%;
+            height: calc(100vh - 100px);
+        }
+
+        .strike-table {
+            flex: 0 0 auto;
+            overflow-y: auto;
+            font-size: 11px;
+        }
+
+        .strike-table table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .strike-table th {
+            background: #d0d0d0;
+            padding: 2px 4px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            border: 1px solid #999;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+
+        .strike-table td {
+            padding: 1px 4px;
+            text-align: right;
+            border: 1px solid #ccc;
+            white-space: nowrap;
+        }
+
+        .strike-table tr:hover {
+            background: #e0e8ff !important;
+        }
+
+        .strike-table .atm-row {
+            background: #ffffaa !important;
+            font-weight: bold;
+        }
+
+        .x-marker {
+            color: #ff0000;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* Zone row colors */
+        .iv-wall-row {
+            background-color: rgba(0, 180, 0, 0.12) !important;
+        }
+
+        .accel-row {
+            background-color: rgba(220, 0, 0, 0.10) !important;
+        }
+
+        .gamma-flip-row {
+            background-color: #ffe066 !important;
+            font-weight: bold;
+        }
+
+        .put-wall-row {
+            background-color: rgba(0, 100, 255, 0.15) !important;
+        }
+
+        .call-wall-row {
+            background-color: rgba(255, 100, 0, 0.15) !important;
+        }
+
+        /* Density */
+        .density-5 {
+            background-color: rgba(80, 80, 80, 0.22) !important;
+        }
+
+        .density-4 {
+            background-color: rgba(80, 80, 80, 0.16) !important;
+        }
+
+        .density-3 {
+            background-color: rgba(80, 80, 80, 0.11) !important;
+        }
+
+        .density-2 {
+            background-color: rgba(80, 80, 80, 0.06) !important;
+        }
+
+        .density-1 {
+            background-color: rgba(80, 80, 80, 0.03) !important;
+        }
+
+        .be-highlight-green {
+            background: #90ee90 !important;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .be-highlight-red {
+            background: #ffb0b0 !important;
+            color: #000;
+            font-weight: bold;
+        }
+
+        #wave-container {
+            flex: 1;
+            position: relative;
+            background: #f4f4f4;
+            border-left: 2px solid #666;
+            border-right: 2px solid #666;
+            overflow: hidden;
+        }
+
+        #wave-canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            position: relative;
+        }
+
+        /* GEX sidebar */
+        #gex-sidebar {
+            width: 90px;
+            background: #1a1a2e;
+            border-left: 2px solid #666;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        #gex-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        #controls {
+            padding: 4px 10px;
+            background: #e0e0e0;
+            border-top: 1px solid #999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        #controls label {
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        #controls input[type=checkbox] {
+            margin-right: 3px;
+        }
+
+        .imbalance-box {
+            display: inline-block;
+            padding: 2px 6px;
+            font-weight: bold;
+            border: 2px solid #000;
+            font-size: 10px;
+        }
+
+        .imbalance-long {
+            background: #ccffcc;
+            color: #006600;
+        }
+
+        .imbalance-short {
+            background: #ffcccc;
+            color: #cc0000;
+        }
+
+        .be-positive {
+            color: #009900;
+        }
+
+        .be-negative {
+            color: #cc0000;
+        }
+
+        .avg-row {
+            background: #d0d0d0 !important;
+            font-weight: bold;
+            border-top: 2px solid #666;
+        }
+
+        /* Entry signals */
+        .entry-long {
+            color: #fff;
+            background: #008800 !important;
+            font-weight: bold;
+        }
+
+        .entry-short {
+            color: #fff;
+            background: #cc0000 !important;
+            font-weight: bold;
+        }
+
+        /* Legend */
+        #legend {
+            padding: 3px 10px;
+            background: #e8e8e8;
+            font-size: 9px;
+            border-top: 1px solid #ccc;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .legend-swatch {
+            width: 14px;
+            height: 10px;
+            border: 1px solid #999;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="header">
+        <div class="left">
+            <select id="ticker-select"
+                style="font-size:14px;font-weight:bold;font-family:Courier New;background:#222;color:#0f0;border:1px solid #0f0;padding:2px 6px;cursor:pointer;">
+                <option value="QQQ" selected>QQQ</option>
+                <option value="SPY">SPY</option>
+                <option value="AAPL">AAPL</option>
+                <option value="NVDA">NVDA</option>
+                <option value="TSLA">TSLA</option>
+            </select>
+            <span id="h-ticker" style="display:none;">QQQ</span>
+            - Wave [ 1 ] Daily Aggregations <span id="h-agg-count">200</span><br>
+            Forward Looking Density : 1 Aggregations
+        </div>
+        <div style="text-align:center; flex:1;">
+            <b>Gamma Flip: <span id="h-gamma-flip" style="color:#cc6600; font-size:13px;"></span></b> &nbsp;|&nbsp;
+            Put Wall: <span id="h-put-wall" style="color:#0066cc; font-weight:bold;"></span> &nbsp;|&nbsp;
+            Call Wall: <span id="h-call-wall" style="color:#cc6600; font-weight:bold;"></span> &nbsp;|&nbsp;
+            <span style="background:#1a1a2e;color:#0f0;padding:2px 6px;border-radius:3px;font-weight:bold;">EM: ±$<span
+                    id="h-em"></span> (<span id="h-em-pct"></span>%)</span>
+        </div>
+        <div class="right">
+            NY date/time<br>
+            <span id="h-datetime"></span>
+        </div>
+    </div>
+
+    <div id="main-container">
+        <!-- LEFT: Calls -->
+        <div class="strike-table" id="call-table-container" style="width: 270px;">
+            <table id="call-table">
+                <thead>
+                    <tr>
+                        <th colspan="5" style="background:#c0c0c0;">CALL CONTRACTS</th>
+                    </tr>
+                    <tr>
+                        <th>strikes</th>
+                        <th>BE</th>
+                        <th>ask</th>
+                        <th>iv</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="call-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- CENTER: Wave -->
+        <div id="wave-container">
+            <div
+                style="text-align:center; padding-top:2px; font-weight:bold; font-size:12px; position:absolute; width:100%; z-index:5; pointer-events:none;">
+                Sinusoidal Wave<br>
+                <span id="wave-option-count" style="font-size:10px; font-weight:normal;"></span>
+            </div>
+            <canvas id="wave-canvas"></canvas>
+            <canvas id="crosshair-canvas"
+                style="position:absolute; top:0; left:0; pointer-events:none; z-index:4;"></canvas>
+        </div>
+
+        <!-- GEX PROFILE SIDEBAR -->
+        <div id="gex-sidebar">
+            <canvas id="gex-canvas"></canvas>
+        </div>
+
+        <!-- RIGHT: Puts -->
+        <div class="strike-table" id="put-table-container" style="width: 290px;">
+            <table id="put-table">
+                <thead>
+                    <tr>
+                        <th colspan="6" style="background:#c0c0c0;">PUT CONTRACTS</th>
+                    </tr>
+                    <tr>
+                        <th>iv</th>
+                        <th>ask</th>
+                        <th>BE</th>
+                        <th>Zone</th>
+                        <th>H/L%</th>
+                        <th style="min-width:75px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="put-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="controls">
+        <span style="font-size:11px; font-weight:bold; margin-right:4px;">View:</span>
+        <label
+            style="background:#1a3322; color:#66ff88; padding:1px 6px; border-radius:3px 0 0 3px; cursor:pointer;"><input
+                type="radio" name="wave-view" id="chk-envelope" value="envelope" checked style="margin-right:3px;"> GEX
+            Envelope</label><label
+            style="background:#1a1a2e; color:#e0c040; padding:1px 6px; border-radius:0 3px 3px 0; cursor:pointer;"><input
+                type="radio" name="wave-view" id="chk-ivdensity" value="iv" style="margin-right:3px;"> IV
+            Density</label>
+        <label><input type="checkbox" id="chk-ask" checked> Show Ask</label>
+        <label><input type="checkbox" id="chk-zones" checked> Show Zones</label>
+        <label><input type="checkbox" id="chk-entries" checked> Show Entries</label>
+        <label><input type="checkbox" id="chk-hide-x"> Hide X</label>
+        <span class="imbalance-box" id="imbalance-label"></span>
+        <span style="margin-left:auto; font-size:10px;">crosshairs: <b id="crosshair-price">---</b></span>
+    </div>
+
+    <div id="legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:rgba(0,180,0,0.25);"></span> IV Wall
+            (vol decrease / pinning)</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:rgba(220,0,0,0.20);"></span>
+            Acceleration Zone (vol increase)</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#ffe066;"></span> Gamma Flip</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:rgba(0,100,255,0.3);"></span> Put Wall
+            (support)</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:rgba(255,100,0,0.3);"></span> Call Wall
+            (resistance)</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#008800;"></span> Long Entry</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#cc0000;"></span> Short Entry</span>
+        <span style="margin-left:auto; font-size:9px;">Fractal Data Set <span id="fractal-range"></span> &nbsp; *Most
+            reactive contract</span>
+    </div>
+
+    <script>
+        let DATA = null;
+        let currentTicker = 'QQQ';
+
+        async function loadData(ticker) {
+            ticker = ticker || 'QQQ';
+            currentTicker = ticker;
+            document.title = ticker + ' Spaghetti Wave — Fractal-X Style';
+
+            // Try ticker-specific file first, fall back to generic
+            // Cache-bust to always load fresh data
+            const cb = '?v=' + Date.now();
+            let url = './data/spaghetti_wave_data_' + ticker + '.json' + cb;
+            let resp = await fetch(url);
+            if (!resp.ok) {
+                // Fallback: try the original QQQ file
+                url = './data/spaghetti_wave_data.json' + cb;
+                resp = await fetch(url);
+            }
+            DATA = await resp.json();
+            init();
+        }
+
+        // Ticker selector + all event listeners — registered ONCE
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('ticker-select').addEventListener('change', (e) => {
+                loadData(e.target.value);
+            });
+            // Wave view toggle — exclusive radio behavior
+            document.querySelectorAll('input[name="wave-view"]').forEach(r => {
+                r.addEventListener('change', () => { if (DATA) drawWave(); });
+            });
+            // Other checkboxes
+            ['chk-zones', 'chk-entries', 'chk-hide-x', 'chk-ask'].forEach(id => {
+                document.getElementById(id).addEventListener('change', () => { if (DATA) { buildStrikeTables(); drawWave(); } });
+            });
+            window.addEventListener('resize', () => { if (DATA) { drawWave(); drawGEXSidebar(); } });
+        });
+
+        function init() {
+            document.getElementById('h-ticker').textContent = DATA.meta.ticker;
+            document.getElementById('h-agg-count').textContent = DATA.meta.aggregations;
+            document.getElementById('h-datetime').textContent = DATA.meta.datetime + ' (EOD)';
+            document.getElementById('wave-option-count').textContent = 'Option Data Shown ' + DATA.meta.total_contracts;
+
+            // Trading signals in header
+            const ts = DATA.trading_signals;
+            document.getElementById('h-gamma-flip').textContent = ts.gamma_flip ? '$' + ts.gamma_flip.toFixed(2) : 'N/A';
+            document.getElementById('h-put-wall').textContent = ts.put_wall ? '$' + ts.put_wall : 'N/A';
+            document.getElementById('h-call-wall').textContent = ts.call_wall ? '$' + ts.call_wall : 'N/A';
+
+            // Expected move
+            const be = DATA.be_bands;
+            document.getElementById('h-em').textContent = be.expected_move;
+            document.getElementById('h-em-pct').textContent = be.expected_move_pct;
+
+            if (DATA.wave_data.length > 0) {
+                document.getElementById('fractal-range').textContent =
+                    DATA.wave_data[0].date + ' to ' + DATA.wave_data[DATA.wave_data.length - 1].date;
+            }
+
+            const imb = DATA.imbalance;
+            const imbEl = document.getElementById('imbalance-label');
+            imbEl.textContent = 'Imbalance: ' + imb.side;
+            imbEl.className = 'imbalance-box ' + (imb.side === 'LONG' ? 'imbalance-long' : 'imbalance-short');
+
+            buildStrikeTables();
+            drawWave();
+            drawGEXSidebar();
+        }
+
+        function getDensityMap() {
+            const d = {}; let mx = 1;
+            DATA.strike_table.forEach(s => {
+                const v = s.call_volume + s.put_volume;
+                d[s.strike] = v; if (v > mx) mx = v;
+            });
+            Object.keys(d).forEach(k => {
+                const n = d[k] / mx;
+                d[k] = n > 0.8 ? 5 : n > 0.6 ? 4 : n > 0.4 ? 3 : n > 0.2 ? 2 : n > 0.05 ? 1 : 0;
+            });
+            return d;
+        }
+
+        function buildStrikeTables() {
+            const strikes = DATA.strike_table;
+            const price = DATA.meta.underlying_price;
+            const showAsk = document.getElementById('chk-ask').checked;
+            const hideX = document.getElementById('chk-hide-x').checked;
+            const showZones = document.getElementById('chk-zones').checked;
+            const showEntries = document.getElementById('chk-entries').checked;
+            const ts = DATA.trading_signals;
+            const reactive_calls = new Set(DATA.most_reactive.calls.map(r => r.strike));
+            const reactive_puts = new Set(DATA.most_reactive.puts.map(r => r.strike));
+            const iv_walls = new Set(ts.iv_walls || []);
+            const accel_zones = new Set(ts.acceleration_zones || []);
+            const entryStrikes = {};
+            if (showEntries) {
+                (ts.entries || []).forEach(e => { entryStrikes[e.strike] = e.type; });
+            }
+            const densities = getDensityMap();
+
+            // Averages
+            let avg = { be: 0, ask: 0, iv: 0, p_iv: 0, p_ask: 0, p_be: 0, cc: 0, pc: 0 };
+            strikes.forEach(s => {
+                if (s.call_be) { avg.be += s.call_be; avg.ask += s.call_ask; avg.iv += s.call_iv; avg.cc++; }
+                if (s.put_iv) { avg.p_iv += s.put_iv; avg.p_ask += s.put_ask; avg.p_be += s.put_be; avg.pc++; }
+            });
+            if (avg.cc) { avg.be /= avg.cc; avg.ask /= avg.cc; avg.iv /= avg.cc; }
+            if (avg.pc) { avg.p_iv /= avg.pc; avg.p_ask /= avg.pc; avg.p_be /= avg.pc; }
+
+            // BE bands from new probability levels
+            const be = DATA.be_bands;
+            const lvl = be.levels || {};
+            const beBands = [
+                { strike: lvl.p99_high || 0, label: (lvl.p99_high || 0).toFixed(2) + ' 1%' },
+                { strike: lvl.p80_high || 0, label: (lvl.p80_high || 0).toFixed(2) + ' 80%H' },
+                { strike: lvl.p50_high || 0, label: (lvl.p50_high || 0).toFixed(2) + ' 50%H' },
+                { strike: price, label: price.toFixed(2) + ' ATM' },
+                { strike: lvl.p50_low || 0, label: (lvl.p50_low || 0).toFixed(2) + ' 50%L' },
+                { strike: lvl.p80_low || 0, label: (lvl.p80_low || 0).toFixed(2) + ' 80%L' },
+                { strike: lvl.p99_low || 0, label: (lvl.p99_low || 0).toFixed(2) + ' 1%' },
+            ];
+
+            // H/L probabilities lookup
+            const hlProbs = {};
+            (be.h_l_probs || []).forEach(p => { hlProbs[p.strike] = p.prob; });
+
+            // CALL TABLE
+            let callHTML = '';
+            strikes.forEach(s => {
+                const isATM = Math.abs(s.strike - price) < 1.5;
+                const isGammaFlip = ts.gamma_flip && Math.abs(s.strike - ts.gamma_flip) < 1;
+                const isPutWall = s.strike === ts.put_wall;
+                const isCallWall = s.strike === ts.call_wall;
+                const isIVWall = showZones && iv_walls.has(s.strike);
+                const isAccel = showZones && accel_zones.has(s.strike);
+                const isReactive = reactive_calls.has(s.strike);
+                const isEntry = entryStrikes[s.strike];
+                const d = densities[s.strike] || 0;
+
+                let cls = '';
+                if (isEntry === 'LONG') cls = 'entry-long';
+                else if (isEntry === 'SHORT') cls = 'entry-short';
+                else if (isATM) cls = 'atm-row';
+                else if (isGammaFlip) cls = 'gamma-flip-row';
+                else if (isCallWall) cls = 'call-wall-row';
+                else if (isPutWall) cls = 'put-wall-row';
+                else if (isIVWall) cls = 'iv-wall-row';
+                else if (isAccel) cls = 'accel-row';
+                else if (d > 0) cls = 'density-' + d;
+
+                const xMark = (!hideX && isReactive) ? ' <span class="x-marker">X</span>' : '';
+
+                // Zone label column
+                let zoneLabel = '';
+                if (isGammaFlip) zoneLabel = '<b style="color:#cc6600;">FLIP</b>';
+                else if (isCallWall) zoneLabel = '<b style="color:#cc6600;">C-WALL</b>';
+                else if (isPutWall) zoneLabel = '<b style="color:#0066cc;">P-WALL</b>';
+                else if (isIVWall) zoneLabel = '<span style="color:#008800;">IV WALL</span>';
+                else if (isAccel) zoneLabel = '<span style="color:#cc0000;">ACCEL</span>';
+                if (isEntry) zoneLabel = '<b>' + isEntry + '</b>';
+
+                callHTML += '<tr class="' + cls + '">' +
+                    '<td>' + s.strike.toFixed(2) + '</td>' +
+                    '<td>' + (s.call_be ? s.call_be.toFixed(2) : '') + '</td>' +
+                    '<td>' + (showAsk && s.call_ask ? s.call_ask.toFixed(2) : '') + xMark + '</td>' +
+                    '<td>' + (s.call_iv ? s.call_iv.toFixed(5) : '') + '</td>' +
+                    '<td style="text-align:center;font-size:9px;">' + zoneLabel + '</td></tr>';
+            });
+            callHTML += '<tr class="avg-row"><td>Avg</td><td>' + avg.be.toFixed(2) + '</td><td>' +
+                avg.ask.toFixed(2) + '</td><td>' + avg.iv.toFixed(5) + '</td><td></td></tr>';
+            document.getElementById('call-tbody').innerHTML = callHTML;
+
+            // PUT TABLE
+            let putHTML = '';
+            strikes.forEach(s => {
+                const isATM = Math.abs(s.strike - price) < 1.5;
+                const isGammaFlip = ts.gamma_flip && Math.abs(s.strike - ts.gamma_flip) < 1;
+                const isPutWall = s.strike === ts.put_wall;
+                const isCallWall = s.strike === ts.call_wall;
+                const isIVWall = showZones && iv_walls.has(s.strike);
+                const isAccel = showZones && accel_zones.has(s.strike);
+                const isReactive = reactive_puts.has(s.strike);
+                const isEntry = entryStrikes[s.strike];
+                const d = densities[s.strike] || 0;
+
+                let cls = '';
+                if (isEntry === 'LONG') cls = 'entry-long';
+                else if (isEntry === 'SHORT') cls = 'entry-short';
+                else if (isATM) cls = 'atm-row';
+                else if (isGammaFlip) cls = 'gamma-flip-row';
+                else if (isCallWall) cls = 'call-wall-row';
+                else if (isPutWall) cls = 'put-wall-row';
+                else if (isIVWall) cls = 'iv-wall-row';
+                else if (isAccel) cls = 'accel-row';
+                else if (d > 0) cls = 'density-' + d;
+
+                const xMark = (!hideX && isReactive) ? '<span class="x-marker">X</span> ' : '';
+
+                let putBEDiff = '', beCls = '';
+                if (s.put_be) {
+                    const diff = s.put_be - price;
+                    putBEDiff = diff.toFixed(2);
+                    beCls = diff >= 0 ? 'be-positive' : 'be-negative';
+                }
+
+                // Zone column
+                let zoneLabel = '';
+                if (isGammaFlip) zoneLabel = '<b style="color:#cc6600;">FLIP</b>';
+                else if (isCallWall) zoneLabel = '<b style="color:#cc6600;">C-WALL</b>';
+                else if (isPutWall) zoneLabel = '<b style="color:#0066cc;">P-WALL</b>';
+                else if (isIVWall) zoneLabel = '<span style="color:#008800;">IV WALL</span>';
+                else if (isAccel) zoneLabel = '<span style="color:#cc0000;">ACCEL</span>';
+                if (isEntry) zoneLabel = '<b>' + isEntry + '</b>';
+
+                // BE band
+                let bandLabel = '';
+                beBands.forEach(b => {
+                    if (Math.abs(s.strike - b.strike) < 1.5) {
+                        bandLabel = '<span style="font-weight:bold;color:#0066cc;">' + b.label + '</span>';
+                    }
+                });
+
+                // H/L% column
+                const hlp = hlProbs[s.strike];
+                let hlLabel = '';
+                if (hlp !== undefined) {
+                    const color = hlp > 30 ? '#006600' : hlp > 10 ? '#996600' : '#cc0000';
+                    hlLabel = '<span style="color:' + color + ';font-weight:bold;">' + hlp + '%</span>';
+                }
+
+                putHTML += '<tr class="' + cls + '">' +
+                    '<td>' + xMark + (s.put_iv ? s.put_iv.toFixed(5) : '') + '</td>' +
+                    '<td>' + (showAsk && s.put_ask ? s.put_ask.toFixed(2) : '') + '</td>' +
+                    '<td class="' + beCls + '">' + putBEDiff + '</td>' +
+                    '<td style="text-align:center;font-size:9px;">' + zoneLabel + '</td>' +
+                    '<td style="text-align:center;font-size:9px;">' + hlLabel + '</td>' +
+                    '<td>' + bandLabel + '</td></tr>';
+            });
+            putHTML += '<tr class="avg-row"><td>' + avg.p_iv.toFixed(5) + '</td><td>' +
+                avg.p_ask.toFixed(2) + '</td><td>' + (avg.p_be - price).toFixed(2) + '</td><td></td><td></td><td></td></tr>';
+            document.getElementById('put-tbody').innerHTML = putHTML;
+
+            setTimeout(() => {
+                const atm = document.querySelector('.atm-row');
+                if (atm) atm.scrollIntoView({ block: 'center' });
+            }, 100);
+        }
+
+        // ─── WAVE DRAWING ────────────────────────────────────────────
+        function drawWave() {
+            const canvas = document.getElementById('wave-canvas');
+            const container = document.getElementById('wave-container');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            const ctx = canvas.getContext('2d');
+
+            const waveViewEl = document.querySelector('input[name="wave-view"]:checked');
+            const waveView = waveViewEl ? waveViewEl.value : 'iv'; // 'gex', 'envelope', or 'iv'
+            const showEnvelope = (waveView === 'envelope');
+            const showZones = document.getElementById('chk-zones').checked;
+            const showEntries = document.getElementById('chk-entries').checked;
+
+            const W = canvas.width, H = canvas.height;
+            const strikes = DATA.strike_table.map(s => s.strike);
+            const minStrike = Math.min(...strikes), maxStrike = Math.max(...strikes);
+            const price = DATA.meta.underlying_price;
+            const ts = DATA.trading_signals;
+
+            const topPad = 30, bottomPad = 40;
+            const drawH = H - topPad - bottomPad;
+            const centerX = W / 2;
+
+            function sToY(s) { return topPad + (1 - (s - minStrike) / (maxStrike - minStrike)) * drawH; }
+
+            // ─── Density Heatmap Background ─────────────────────────
+            // Compute price density from 200 days of wave data
+            // Darker = price spent more time at this level
+            ctx.fillStyle = '#f5f5f0';
+            ctx.fillRect(0, 0, W, H);
+
+            // Skip in envelope mode — density bands wash out the colored fills
+            if (!showEnvelope && DATA.wave_data.length > 0) {
+                // Collect all historical underlying prices
+                const histPrices = DATA.wave_data.map(w => w.underlying_price);
+                const bandwidth = (maxStrike - minStrike) * 0.025; // Wider bandwidth for smoother gradient
+
+                // Compute density for each pixel row using KDE
+                const densityMap = [];
+                let maxDensity = 0;
+                for (let py = topPad; py < H - bottomPad; py++) {
+                    const priceAtY = maxStrike - (py - topPad) / drawH * (maxStrike - minStrike);
+                    let density = 0;
+                    histPrices.forEach(hp => {
+                        const z = (priceAtY - hp) / bandwidth;
+                        density += Math.exp(-0.5 * z * z);
+                    });
+                    densityMap.push({ py, density });
+                    if (density > maxDensity) maxDensity = density;
+                }
+
+                // Paint density bands — subtle gray-to-dark gradient
+                if (maxDensity > 0) {
+                    densityMap.forEach(({ py, density }) => {
+                        const intensity = density / maxDensity;
+                        if (intensity > 0.03) {
+                            // Subtle: light cream -> soft warm gray (not too dark)
+                            const alpha = intensity * 0.45; // Max 45% opacity
+                            ctx.fillStyle = 'rgba(80, 50, 30, ' + alpha.toFixed(3) + ')';
+                            ctx.fillRect(0, py, W, 1);
+                        }
+                    });
+                }
+            }
+
+            // ─── Zone shading ───────────────────────────────────────
+            if (showZones) {
+                // IV Walls (green bands — vol decrease / pinning)
+                (ts.iv_walls || []).forEach(s => {
+                    const y = sToY(s + 0.5), h = sToY(s - 0.5) - y;
+                    ctx.fillStyle = 'rgba(0,180,0,0.12)';
+                    ctx.fillRect(0, y, W, h);
+                });
+
+                // Acceleration zones (red bands — vol increase)
+                (ts.acceleration_zones || []).forEach(s => {
+                    const y = sToY(s + 0.5), h = sToY(s - 0.5) - y;
+                    ctx.fillStyle = 'rgba(220,0,0,0.08)';
+                    ctx.fillRect(0, y, W, h);
+                });
+
+                // Gamma Flip line (thick yellow-orange)
+                if (ts.gamma_flip) {
+                    const y = sToY(ts.gamma_flip);
+                    ctx.strokeStyle = '#cc6600';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([8, 4]);
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#cc6600';
+                    ctx.font = 'bold 11px Courier New';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('← GAMMA FLIP $' + ts.gamma_flip.toFixed(2), 5, y - 5);
+                }
+
+                // Put Wall line (blue)
+                if (ts.put_wall) {
+                    const y = sToY(ts.put_wall);
+                    ctx.strokeStyle = '#0066cc';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 3]);
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#0066cc';
+                    ctx.font = 'bold 10px Courier New';
+                    ctx.fillText('PUT WALL $' + ts.put_wall, 5, y + 14);
+                }
+
+                // Call Wall line (orange)
+                if (ts.call_wall) {
+                    const y = sToY(ts.call_wall);
+                    ctx.strokeStyle = '#cc6600';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 3]);
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#cc6600';
+                    ctx.font = 'bold 10px Courier New';
+                    ctx.textAlign = 'right';
+                    ctx.fillText('CALL WALL $' + ts.call_wall, W - 5, y - 5);
+                    ctx.textAlign = 'left';
+                }
+            }
+
+            // ─── Concentration zone rectangles ───────────────────────
+            if (showZones && DATA.concentration) {
+                const conc = DATA.concentration;
+                // Call concentration (magenta)
+                (conc.call_zones || []).forEach((s, i) => {
+                    const y = sToY(s + 0.5), h = sToY(s - 0.5) - y;
+                    const alpha = 0.12 - i * 0.03;
+                    ctx.fillStyle = 'rgba(180,0,180,' + Math.max(0.04, alpha) + ')';
+                    ctx.fillRect(centerX, y, W * 0.35, h);
+                    ctx.strokeStyle = 'rgba(180,0,180,0.4)'; ctx.lineWidth = 1;
+                    ctx.strokeRect(centerX, y, W * 0.35, h);
+                });
+                // Put concentration (cyan)
+                (conc.put_zones || []).forEach((s, i) => {
+                    const y = sToY(s + 0.5), h = sToY(s - 0.5) - y;
+                    const alpha = 0.12 - i * 0.03;
+                    ctx.fillStyle = 'rgba(0,180,180,' + Math.max(0.04, alpha) + ')';
+                    ctx.fillRect(centerX - W * 0.35, y, W * 0.35, h);
+                    ctx.strokeStyle = 'rgba(0,180,180,0.4)'; ctx.lineWidth = 1;
+                    ctx.strokeRect(centerX - W * 0.35, y, W * 0.35, h);
+                });
+            }
+
+            // ─── Entry signal arrows ────────────────────────────────
+            if (showEntries && ts.entries) {
+                ts.entries.forEach(e => {
+                    const y = sToY(e.strike);
+                    if (e.type === 'LONG') {
+                        // Green up arrow
+                        ctx.fillStyle = '#00aa00';
+                        ctx.beginPath();
+                        ctx.moveTo(W * 0.88, y); ctx.lineTo(W * 0.88 + 10, y + 10);
+                        ctx.lineTo(W * 0.88 + 5, y + 10); ctx.lineTo(W * 0.88 + 5, y + 22);
+                        ctx.lineTo(W * 0.88 - 5, y + 22); ctx.lineTo(W * 0.88 - 5, y + 10);
+                        ctx.lineTo(W * 0.88 - 10, y + 10); ctx.closePath(); ctx.fill();
+                        ctx.font = 'bold 9px Courier New'; ctx.fillStyle = '#006600';
+                        ctx.textAlign = 'right';
+                        ctx.fillText('LONG $' + e.strike, W * 0.88 - 15, y + 16);
+                    } else {
+                        // Red down arrow
+                        ctx.fillStyle = '#cc0000';
+                        ctx.beginPath();
+                        ctx.moveTo(W * 0.12, y); ctx.lineTo(W * 0.12 + 10, y - 10);
+                        ctx.lineTo(W * 0.12 + 5, y - 10); ctx.lineTo(W * 0.12 + 5, y - 22);
+                        ctx.lineTo(W * 0.12 - 5, y - 22); ctx.lineTo(W * 0.12 - 5, y - 10);
+                        ctx.lineTo(W * 0.12 - 10, y - 10); ctx.closePath(); ctx.fill();
+                        ctx.font = 'bold 9px Courier New'; ctx.fillStyle = '#990000';
+                        ctx.textAlign = 'left';
+                        ctx.fillText('SHORT $' + e.strike, W * 0.12 + 15, y - 6);
+                    }
+                    ctx.textAlign = 'left';
+                });
+            }
+
+            // Grid
+            ctx.strokeStyle = '#ddd'; ctx.lineWidth = 0.3;
+            strikes.forEach(s => {
+                if (s % 5 === 0) { const y = sToY(s); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+            });
+
+            if (!showEnvelope && waveView !== 'iv') { drawOverlays(ctx, W, H, topPad, bottomPad, drawH, centerX, sToY, price); return; }
+
+            if (showEnvelope && DATA.wave_data.length > 0) {
+                try {
+                    const halfW = W * 0.42;
+                    const envH = canvas.height;
+
+                    // For each day, compute the Bezier curve X-offset from center at each Y-pixel
+                    // (same math as drawMirroredBezier in spaghetti)
+                    function rasterizeDayCurve(wd) {
+                        const gex = wd.gex_by_strike;
+                        const strKeys = Object.keys(gex).sort((a, b) => parseFloat(a) - parseFloat(b));
+                        const numKeys = strKeys.map(parseFloat);
+                        if (strKeys.length < 4) return null;
+                        const absVals = strKeys.map(k => Math.sqrt(Math.abs(gex[k] || 0)));
+                        let dayMax = 1;
+                        absVals.forEach(v => { if (v > dayMax) dayMax = v; });
+                        const xScale = halfW / dayMax;
+
+                        // Build Bezier points (right side)
+                        const pts = numKeys.map((s, idx) => ({
+                            x: absVals[idx] * xScale,  // offset from center
+                            y: sToY(s)
+                        }));
+
+                        // Sample the Bezier at every Y pixel
+                        const xAtY = new Float32Array(envH);
+                        // Evaluate Bezier segments — for each segment i, sample at sub-pixel resolution
+                        for (let i = 0; i < pts.length - 1; i++) {
+                            const p0 = pts[Math.max(0, i - 1)], p1 = pts[i];
+                            const p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+                            const t = 0.5;
+                            // Control points for this cubic Bezier segment
+                            const cp1x = p1.x + (p2.x - p0.x) * t, cp1y = p1.y + (p2.y - p0.y) * t;
+                            const cp2x = p2.x - (p3.x - p1.x) * t, cp2y = p2.y - (p3.y - p1.y) * t;
+                            // Sample at fine resolution
+                            const steps = Math.max(20, Math.abs(Math.round(p2.y - p1.y)));
+                            for (let s = 0; s <= steps; s++) {
+                                const u = s / steps;
+                                const u2 = u * u, u3 = u2 * u;
+                                const mu = 1 - u, mu2 = mu * mu, mu3 = mu2 * mu;
+                                const bx = mu3 * p1.x + 3 * mu2 * u * cp1x + 3 * mu * u2 * cp2x + u3 * p2.x;
+                                const by = mu3 * p1.y + 3 * mu2 * u * cp1y + 3 * mu * u2 * cp2y + u3 * p2.y;
+                                const row = Math.round(by);
+                                if (row >= 0 && row < H) {
+                                    if (bx > xAtY[row]) xAtY[row] = bx;
+                                }
+                            }
+                        }
+                        // Fill gaps (rows between defined points) with linear interpolation
+                        let lastDefined = -1;
+                        for (let y = 0; y < H; y++) {
+                            if (xAtY[y] > 0) {
+                                if (lastDefined >= 0 && y - lastDefined > 1) {
+                                    for (let yy = lastDefined + 1; yy < y; yy++) {
+                                        const frac = (yy - lastDefined) / (y - lastDefined);
+                                        xAtY[yy] = xAtY[lastDefined] * (1 - frac) + xAtY[y] * frac;
+                                    }
+                                }
+                                lastDefined = y;
+                            }
+                        }
+                        return xAtY;
+                    }
+
+                    // Rasterize all days
+                    const allCurves = DATA.wave_data.map(wd => rasterizeDayCurve(wd)).filter(c => c !== null);
+
+                    if (allCurves.length > 0) {
+                        // For each Y-row, compute percentiles of X-offsets across all days
+                        function pctVal(arr, p) {
+                            if (!arr.length) return 0;
+                            return arr[Math.floor(p * (arr.length - 1))];
+                        }
+
+                        const envMax = [], envP75 = [], envMed = [], envP25 = [], envMin = [];
+                        const envToday = [];
+                        const todayCurve = allCurves[allCurves.length - 1];
+
+                        for (let y = 0; y < H; y++) {
+                            const vals = [];
+                            allCurves.forEach(c => { if (c[y] > 0) vals.push(c[y]); });
+                            vals.sort((a, b) => a - b);
+                            envMax.push(vals.length ? vals[vals.length - 1] : 0);
+                            envP75.push(pctVal(vals, 0.75));
+                            envMed.push(pctVal(vals, 0.5));
+                            envP25.push(pctVal(vals, 0.25));
+                            envMin.push(vals.length ? vals[0] : 0);
+                            envToday.push(todayCurve ? todayCurve[y] : 0);
+                        }
+
+                        // Draw filled region from center to curve (mirrored)
+                        function drawFilledRegion(arr, color) {
+                            ctx.fillStyle = color;
+                            for (let y = topPad; y < H - 20; y++) {
+                                const w = arr[y];
+                                if (w > 0) {
+                                    ctx.fillRect(centerX - w, y, w * 2, 1);
+                                }
+                            }
+                        }
+
+                        // Draw line as pixel trail (mirrored)
+                        function drawLinePixels(arr, color, width) {
+                            ctx.strokeStyle = color;
+                            ctx.lineWidth = width;
+                            // Right
+                            ctx.beginPath();
+                            let started = false;
+                            for (let y = topPad; y < envH - 20; y++) {
+                                if (arr[y] > 0) {
+                                    if (!started) { ctx.moveTo(centerX + arr[y], y); started = true; }
+                                    else ctx.lineTo(centerX + arr[y], y);
+                                }
+                            }
+                            ctx.stroke();
+                            // Left
+                            ctx.beginPath();
+                            started = false;
+                            for (let y = topPad; y < envH - 20; y++) {
+                                if (arr[y] > 0) {
+                                    if (!started) { ctx.moveTo(centerX - arr[y], y); started = true; }
+                                    else ctx.lineTo(centerX - arr[y], y);
+                                }
+                            }
+                            ctx.stroke();
+                        }
+
+
+                        // Layer 1: Max extent — outermost, light blue
+                        drawFilledRegion(envMax, 'rgba(30,80,200,0.15)');
+                        // Layer 2: P75 — subtle teal
+                        drawFilledRegion(envP75, 'rgba(0,150,140,0.12)');
+                        // Layer 3: Median region — subtle green
+                        drawFilledRegion(envMed, 'rgba(0,160,80,0.10)');
+                        // Layer 4: P25 — white carve to lighten center
+                        drawFilledRegion(envP25, 'rgba(255,255,255,0.50)');
+
+                        // Outline strokes for max and p75
+                        drawLinePixels(envMax, 'rgba(20,60,180,0.6)', 1.5);
+                        drawLinePixels(envP75, 'rgba(0,130,130,0.4)', 1.0);
+                        // Median — dashed dark
+                        ctx.setLineDash([6, 3]);
+                        drawLinePixels(envMed, 'rgba(0,0,0,0.5)', 1.5);
+                        ctx.setLineDash([]);
+                        // P25 outline
+                        drawLinePixels(envP25, 'rgba(0,130,130,0.3)', 0.8);
+                        // Today — red
+                        drawLinePixels(envToday, '#ee0000', 2.5);
+
+                        // Legend
+                        ctx.font = 'bold 10px Courier New'; ctx.textAlign = 'right';
+                        ctx.fillStyle = 'rgba(30,100,220,0.8)';
+                        ctx.fillText('■ outer = min/max range', W - 10, topPad + 14);
+                        ctx.fillStyle = 'rgba(0,180,80,0.9)';
+                        ctx.fillText('■ inner = 25-75th pctl', W - 10, topPad + 26);
+                        ctx.fillStyle = '#000';
+                        ctx.fillText('--- median', W - 10, topPad + 38);
+                        ctx.fillStyle = '#ee0000';
+                        ctx.fillText('━ today', W - 10, topPad + 50);
+                        ctx.textAlign = 'left';
+                    }
+                } catch (e) { document.title = 'ENVELOPE ERROR: ' + e.message; }
+            } // end showEnvelope
+
+            // ─── IV DENSITY ENVELOPE (clean filled bands) ──────────
+            if (waveView === 'iv' && DATA.wave_data.length > 0) {
+                const sqrt252 = Math.sqrt(252);
+                const ivH = canvas.height;
+
+                // Find max density for scaling
+                let maxDens = 0;
+                DATA.wave_data.forEach(wd => {
+                    if (!wd.atm_iv || wd.atm_iv <= 0) return;
+                    const sig = wd.atm_iv * wd.underlying_price / sqrt252;
+                    if (sig > 0) {
+                        const peak = 1 / (sig * 2.507);
+                        if (peak > maxDens) maxDens = peak;
+                    }
+                });
+                const densXScale = maxDens > 0 ? (W * 0.85) / maxDens : 1;
+
+                // Rasterize each day's bell curve to pixel level
+                function rasterizeIVCurve(wd) {
+                    if (!wd.atm_iv || wd.atm_iv <= 0) return null;
+                    const sig = wd.atm_iv * wd.underlying_price / sqrt252;
+                    if (sig <= 0) return null;
+
+                    const xAtY = new Float32Array(ivH);
+                    for (let py = topPad; py < ivH - bottomPad; py++) {
+                        const strikeVal = maxStrike - (py - topPad) / drawH * (maxStrike - minStrike);
+                        const z = (strikeVal - wd.underlying_price) / sig;
+                        const density = Math.exp(-0.5 * z * z) / (sig * 2.507);
+                        xAtY[py] = density * densXScale;
+                    }
+                    return xAtY;
+                }
+
+                const allIVCurves = DATA.wave_data.map(wd => rasterizeIVCurve(wd)).filter(c => c !== null);
+
+                if (allIVCurves.length > 0) {
+                    function pctVal2(arr, p) {
+                        if (!arr.length) return 0;
+                        return arr[Math.floor(p * (arr.length - 1))];
+                    }
+
+                    const ivMax = [], ivP75 = [], ivMed = [], ivP25 = [];
+                    const ivToday = [];
+                    const todayIV = allIVCurves[allIVCurves.length - 1];
+
+                    for (let y = 0; y < ivH; y++) {
+                        const vals = [];
+                        allIVCurves.forEach(c => { if (c[y] > 0.5) vals.push(c[y]); });
+                        vals.sort((a, b) => a - b);
+                        ivMax.push(vals.length ? vals[vals.length - 1] : 0);
+                        ivP75.push(pctVal2(vals, 0.75));
+                        ivMed.push(pctVal2(vals, 0.5));
+                        ivP25.push(pctVal2(vals, 0.25));
+                        ivToday.push(todayIV ? todayIV[y] : 0);
+                    }
+
+                    // Draw filled region (mirrored)
+                    function drawIVFill(arr, color) {
+                        ctx.fillStyle = color;
+                        for (let y = topPad; y < ivH - 20; y++) {
+                            if (arr[y] > 0) ctx.fillRect(centerX - arr[y], y, arr[y] * 2, 1);
+                        }
+                    }
+
+                    // Draw line (mirrored)
+                    function drawIVLine(arr, color, width) {
+                        ctx.strokeStyle = color; ctx.lineWidth = width;
+                        ctx.beginPath(); let s = false;
+                        for (let y = topPad; y < ivH - 20; y++) {
+                            if (arr[y] > 0) { if (!s) { ctx.moveTo(centerX + arr[y], y); s = true; } else ctx.lineTo(centerX + arr[y], y); }
+                        }
+                        ctx.stroke();
+                        ctx.beginPath(); s = false;
+                        for (let y = topPad; y < ivH - 20; y++) {
+                            if (arr[y] > 0) { if (!s) { ctx.moveTo(centerX - arr[y], y); s = true; } else ctx.lineTo(centerX - arr[y], y); }
+                        }
+                        ctx.stroke();
+                    }
+
+                    // Fills — purple/violet palette
+                    drawIVFill(ivMax, 'rgba(100,40,160,0.12)');
+                    drawIVFill(ivP75, 'rgba(80,30,140,0.10)');
+                    drawIVFill(ivMed, 'rgba(60,20,120,0.08)');
+                    drawIVFill(ivP25, 'rgba(255,255,255,0.45)');
+
+                    // Outlines
+                    drawIVLine(ivMax, 'rgba(100,40,160,0.5)', 1.5);
+                    drawIVLine(ivP75, 'rgba(80,30,140,0.35)', 1.0);
+                    ctx.setLineDash([6, 3]);
+                    drawIVLine(ivMed, 'rgba(0,0,0,0.45)', 1.5);
+                    ctx.setLineDash([]);
+                    drawIVLine(ivToday, '#cc0000', 2.5);
+
+                    // Legend
+                    ctx.font = 'bold 10px Courier New'; ctx.textAlign = 'right';
+                    ctx.fillStyle = 'rgba(100,40,160,0.8)';
+                    ctx.fillText('■ outer = IV range', W - 10, topPad + 14);
+                    ctx.fillStyle = 'rgba(60,20,120,0.9)';
+                    ctx.fillText('■ inner = 25-75th pctl', W - 10, topPad + 26);
+                    ctx.fillStyle = '#000';
+                    ctx.fillText('--- median', W - 10, topPad + 38);
+                    ctx.fillStyle = '#cc0000';
+                    ctx.fillText('━ today', W - 10, topPad + 50);
+                    ctx.textAlign = 'left';
+                }
+            }
+
+            // ─── Probability range lines (Fractal-X style) ─────────
+            const lvl2 = DATA.be_bands.levels || {};
+            const sigma = DATA.be_bands.daily_sigma || 0;
+
+            // 50% range (dotted cyan) — 50% of moves stay within
+            if (lvl2.p50_high) {
+                [lvl2.p50_high, lvl2.p50_low].forEach(s => {
+                    const y = sToY(s);
+                    ctx.strokeStyle = '#0088cc'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#0088cc'; ctx.font = 'bold 9px Courier New'; ctx.textAlign = 'right';
+                    ctx.fillText(s.toFixed(2) + ' 50%', W - 5, y + (s > price ? -4 : 12));
+                });
+            }
+
+            // 25% range (dotted gold) — 75% of moves stay within, 25% exceed
+            if (sigma > 0) {
+                const z25 = 1.150; // z-score for 75% containment (25% tail)
+                const p25_high = price + z25 * sigma;
+                const p25_low = price - z25 * sigma;
+                [p25_high, p25_low].forEach(s => {
+                    const y = sToY(s);
+                    ctx.strokeStyle = '#cc8800'; ctx.lineWidth = 1.2; ctx.setLineDash([6, 3]);
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#cc8800'; ctx.font = 'bold 9px Courier New'; ctx.textAlign = 'right';
+                    ctx.fillText(s.toFixed(2) + ' 25%', W - 5, y + (s > price ? -4 : 12));
+                });
+            }
+
+            // 80% range (dotted magenta)
+            if (lvl2.p80_high) {
+                [lvl2.p80_high, lvl2.p80_low].forEach(s => {
+                    const y = sToY(s);
+                    ctx.strokeStyle = '#cc00cc'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 4]);
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#cc00cc'; ctx.font = 'bold 9px Courier New'; ctx.textAlign = 'right';
+                    ctx.fillText(s.toFixed(2) + ' 80%', W - 5, y + (s > price ? -4 : 12));
+                });
+            }
+
+            // 1% range (dotted dark red) — 99% of moves stay within, extreme tails
+            if (lvl2.p99_high) {
+                [lvl2.p99_high, lvl2.p99_low].forEach(s => {
+                    const y = sToY(s);
+                    if (y >= topPad && y <= H - bottomPad) {
+                        ctx.strokeStyle = '#880000'; ctx.lineWidth = 1.0; ctx.setLineDash([8, 4]);
+                        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.fillStyle = '#880000'; ctx.font = 'bold 9px Courier New'; ctx.textAlign = 'right';
+                        ctx.fillText(s.toFixed(2) + ' 1%', W - 5, y + (s > price ? -4 : 12));
+                    }
+                });
+            }
+            ctx.textAlign = 'left';
+
+            drawOverlays(ctx, W, H, topPad, bottomPad, drawH, centerX, sToY, price);
+        }
+
+        function drawOverlays(ctx, W, H, topPad, bottomPad, drawH, centerX, sToY, price) {
+            // Center line
+            ctx.strokeStyle = '#00aa00'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(centerX, topPad); ctx.lineTo(centerX, H - bottomPad); ctx.stroke();
+
+            // Price line
+            const priceY = sToY(price);
+            ctx.strokeStyle = '#00aa00'; ctx.lineWidth = 1.5;
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath(); ctx.moveTo(0, priceY); ctx.lineTo(W, priceY); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Downside/upside
+            const netGEX = DATA.imbalance.net_gex;
+            if (netGEX < 0) {
+                const ax = centerX + W * 0.18, ay = H - bottomPad - 55;
+                ctx.fillStyle = '#cc0000'; ctx.font = 'bold 10px Courier New'; ctx.textAlign = 'center';
+                ctx.fillText('Downside', ax, ay); ctx.fillText('Risk', ax, ay + 12);
+                ctx.beginPath(); ctx.moveTo(ax - 6, ay + 18); ctx.lineTo(ax + 6, ay + 18);
+                ctx.lineTo(ax + 6, ay + 35); ctx.lineTo(ax + 12, ay + 35); ctx.lineTo(ax, ay + 48);
+                ctx.lineTo(ax - 12, ay + 35); ctx.lineTo(ax - 6, ay + 35); ctx.closePath(); ctx.fill();
+            }
+
+            // Crosshair overlay
+            const chCanvas = document.getElementById('crosshair-canvas');
+            chCanvas.width = W; chCanvas.height = H;
+            const chCtx = chCanvas.getContext('2d');
+            const strikes2 = DATA.strike_table.map(s => s.strike);
+            const minS = Math.min(...strikes2), maxS = Math.max(...strikes2);
+            const waveCanvas = canvas;
+            waveCanvas.onmousemove = function (e) {
+                const r = waveCanvas.getBoundingClientRect();
+                const mx = e.clientX - r.left, my = e.clientY - r.top;
+                chCtx.clearRect(0, 0, W, H);
+                // Horizontal line
+                chCtx.strokeStyle = 'rgba(0,0,0,0.35)'; chCtx.lineWidth = 0.8;
+                chCtx.setLineDash([4, 3]);
+                chCtx.beginPath(); chCtx.moveTo(0, my); chCtx.lineTo(W, my); chCtx.stroke();
+                // Vertical line
+                chCtx.beginPath(); chCtx.moveTo(mx, topPad); chCtx.lineTo(mx, H - bottomPad); chCtx.stroke();
+                chCtx.setLineDash([]);
+                // Price label at cursor
+                const priceAtY = maxS - ((my - topPad) / drawH) * (maxS - minS);
+                chCtx.fillStyle = 'rgba(0,0,0,0.7)';
+                chCtx.fillRect(0, my - 8, 58, 16);
+                chCtx.fillStyle = '#fff'; chCtx.font = 'bold 9px Courier New'; chCtx.textAlign = 'left';
+                chCtx.fillText('$' + priceAtY.toFixed(2), 3, my + 3);
+                document.getElementById('crosshair-price').textContent = priceAtY.toFixed(2);
+            };
+            waveCanvas.onmouseleave = function () {
+                chCtx.clearRect(0, 0, W, H);
+                document.getElementById('crosshair-price').textContent = '---';
+            };
+        }
+
+        // ─── GEX PROFILE SIDEBAR ────────────────────────────────────
+        function drawGEXSidebar() {
+            const canvas = document.getElementById('gex-canvas');
+            const container = document.getElementById('gex-sidebar');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            const ctx = canvas.getContext('2d');
+
+            const ts = DATA.trading_signals;
+            const profile = ts.gex_profile || [];
+            const strikes = DATA.strike_table.map(s => s.strike);
+            const minStrike = Math.min(...strikes), maxStrike = Math.max(...strikes);
+
+            const W = canvas.width, H = canvas.height;
+            const topPad = 30, bottomPad = 40;
+            const drawH = H - topPad - bottomPad;
+
+            function sToY(s) { return topPad + (1 - (s - minStrike) / (maxStrike - minStrike)) * drawH; }
+
+            // Background
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, W, H);
+
+            // Title
+            ctx.fillStyle = '#aaa'; ctx.font = 'bold 9px Courier New'; ctx.textAlign = 'center';
+            ctx.fillText('NET GEX', W / 2, 12);
+            ctx.fillText('PROFILE', W / 2, 22);
+
+            // Find max for scaling
+            let maxGEX = 1;
+            profile.forEach(p => { if (Math.abs(p.net_gex) > maxGEX) maxGEX = Math.abs(p.net_gex); });
+
+            const barScale = (W * 0.8) / maxGEX;
+            const cx = W / 2;
+
+            // Draw bars
+            profile.forEach(p => {
+                const y = sToY(p.strike);
+                const barW = p.net_gex * barScale / 2;
+                const barH = Math.max(2, drawH / profile.length * 0.8);
+
+                if (p.net_gex >= 0) {
+                    ctx.fillStyle = 'rgba(0,200,80,0.7)';
+                } else {
+                    ctx.fillStyle = 'rgba(255,50,50,0.7)';
+                }
+                ctx.fillRect(cx, y - barH / 2, barW, barH);
+            });
+
+            // Center line
+            ctx.strokeStyle = '#555'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(cx, topPad); ctx.lineTo(cx, H - bottomPad); ctx.stroke();
+
+            // Gamma flip marker
+            if (ts.gamma_flip) {
+                const y = sToY(ts.gamma_flip);
+                ctx.strokeStyle = '#cc6600'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+
+</html>
