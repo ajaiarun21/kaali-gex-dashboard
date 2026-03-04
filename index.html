@@ -1114,14 +1114,18 @@
                     ctx.strokeStyle = '#1a7a7a'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
                     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
                     ctx.setLineDash([]);
+                    const dist = (s - price).toFixed(2);
+                    const distStr = (s > price ? '+' : '') + dist;
                     const txt = s.toFixed(2) + ' 50%';
                     ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'right';
-                    const tw = ctx.measureText(txt).width;
+                    const tw = ctx.measureText(txt + '  ' + distStr).width;
                     const ty = y + (s > price ? -5 : 14);
                     ctx.fillStyle = 'rgba(10,30,30,0.8)';
                     ctx.fillRect(W - tw - 10, ty - 11, tw + 8, 14);
                     ctx.fillStyle = '#70c8c8';
-                    ctx.fillText(txt, W - 7, ty);
+                    ctx.fillText(txt, W - ctx.measureText('  ' + distStr).width - 7, ty);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(distStr, W - 7, ty);
                 });
             }
 
@@ -1135,14 +1139,18 @@
                     ctx.strokeStyle = '#997700'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 3]);
                     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
                     ctx.setLineDash([]);
+                    const dist = (s - price).toFixed(2);
+                    const distStr = (s > price ? '+' : '') + dist;
                     const txt = s.toFixed(2) + ' 25%';
                     ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'right';
-                    const tw = ctx.measureText(txt).width;
+                    const tw = ctx.measureText(txt + '  ' + distStr).width;
                     const ty = y + (s > price ? -5 : 14);
                     ctx.fillStyle = 'rgba(30,20,5,0.8)';
                     ctx.fillRect(W - tw - 10, ty - 11, tw + 8, 14);
                     ctx.fillStyle = '#d4a840';
-                    ctx.fillText(txt, W - 7, ty);
+                    ctx.fillText(txt, W - ctx.measureText('  ' + distStr).width - 7, ty);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(distStr, W - 7, ty);
                 });
             }
 
@@ -1153,14 +1161,18 @@
                     ctx.strokeStyle = '#9930a0'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
                     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
                     ctx.setLineDash([]);
+                    const dist = (s - price).toFixed(2);
+                    const distStr = (s > price ? '+' : '') + dist;
                     const txt = s.toFixed(2) + ' 80%';
                     ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'right';
-                    const tw = ctx.measureText(txt).width;
+                    const tw = ctx.measureText(txt + '  ' + distStr).width;
                     const ty = y + (s > price ? -5 : 14);
                     ctx.fillStyle = 'rgba(25,10,30,0.8)';
                     ctx.fillRect(W - tw - 10, ty - 11, tw + 8, 14);
                     ctx.fillStyle = '#c880d0';
-                    ctx.fillText(txt, W - 7, ty);
+                    ctx.fillText(txt, W - ctx.measureText('  ' + distStr).width - 7, ty);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(distStr, W - 7, ty);
                 });
             }
 
@@ -1172,14 +1184,18 @@
                         ctx.strokeStyle = '#993333'; ctx.lineWidth = 1.5; ctx.setLineDash([8, 4]);
                         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
                         ctx.setLineDash([]);
+                        const dist = (s - price).toFixed(2);
+                        const distStr = (s > price ? '+' : '') + dist;
                         const txt = s.toFixed(2) + ' 1%';
                         ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'right';
-                        const tw = ctx.measureText(txt).width;
+                        const tw = ctx.measureText(txt + '  ' + distStr).width;
                         const ty = y + (s > price ? -5 : 14);
                         ctx.fillStyle = 'rgba(30,10,10,0.8)';
                         ctx.fillRect(W - tw - 10, ty - 11, tw + 8, 14);
                         ctx.fillStyle = '#d07070';
-                        ctx.fillText(txt, W - 7, ty);
+                        ctx.fillText(txt, W - ctx.measureText('  ' + distStr).width - 7, ty);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillText(distStr, W - 7, ty);
                     }
                 });
             }
