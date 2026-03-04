@@ -281,9 +281,12 @@
             Forward Looking Density : 1 Aggregations
         </div>
         <div style="text-align:center; flex:1;">
-            <b>Gamma Flip: <span id="h-gamma-flip" style="color:#cc6600; font-size:13px;"></span></b> &nbsp;|&nbsp;
-            Put Wall: <span id="h-put-wall" style="color:#0066cc; font-weight:bold;"></span> &nbsp;|&nbsp;
-            Call Wall: <span id="h-call-wall" style="color:#cc6600; font-weight:bold;"></span> &nbsp;|&nbsp;
+            <b>Gamma Flip: <span id="h-gamma-flip" style="color:#cc6600; font-size:13px;"></span></b><span
+                id="h-gamma-dist" style="font-size:10px;margin-left:3px;"></span> &nbsp;|&nbsp;
+            Put Wall: <span id="h-put-wall" style="color:#0066cc; font-weight:bold;"></span><span id="h-put-dist"
+                style="font-size:10px;margin-left:3px;"></span> &nbsp;|&nbsp;
+            Call Wall: <span id="h-call-wall" style="color:#cc6600; font-weight:bold;"></span><span id="h-call-dist"
+                style="font-size:10px;margin-left:3px;"></span> &nbsp;|&nbsp;
             <span style="background:#1a1a2e;color:#0f0;padding:2px 6px;border-radius:3px;font-weight:bold;">EM: ±$<span
                     id="h-em"></span> (<span id="h-em-pct"></span>%)</span>
         </div>
@@ -306,7 +309,7 @@
                         <th>BE</th>
                         <th>ask</th>
                         <th>iv</th>
-                        <th></th>
+                        <th>Zone</th>
                     </tr>
                 </thead>
                 <tbody id="call-tbody"></tbody>
@@ -393,16 +396,28 @@
             currentTicker = ticker;
             document.title = ticker + ' Spaghetti Wave — Fractal-X Style';
 
-            // Try ticker-specific file first, fall back to generic
-            // Cache-bust to always load fresh data
+            // Hide any previous error overlay
+            const errEl = document.getElementById('no-data-overlay');
+            if (errEl) errEl.remove();
+
             const cb = '?v=' + Date.now();
             let url = './data/spaghetti_wave_data_' + ticker + '.json' + cb;
             let resp = await fetch(url);
+
             if (!resp.ok) {
-                // Fallback: try the original QQQ file
-                url = './data/spaghetti_wave_data.json' + cb;
-                resp = await fetch(url);
+                // Show a clear error — do NOT silently load wrong ticker data
+                const overlay = document.createElement('div');
+                overlay.id = 'no-data-overlay';
+                overlay.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);' +
+                    'background:rgba(20,20,20,0.92);color:#ff6060;font-family:Courier New;font-size:16px;' +
+                    'font-weight:bold;padding:20px 36px;border:2px solid #cc0000;border-radius:6px;z-index:999;text-align:center;';
+                overlay.innerHTML = '⚠ No data available for <span style="color:#fff">' + ticker + '</span><br>' +
+                    '<span style="font-size:11px;color:#aaa;font-weight:normal;">Only QQQ data is currently loaded.</span>';
+                document.getElementById('wave-container').style.position = 'relative';
+                document.getElementById('wave-container').appendChild(overlay);
+                return;
             }
+
             DATA = await resp.json();
             init();
         }
@@ -431,9 +446,29 @@
 
             // Trading signals in header
             const ts = DATA.trading_signals;
+            const price = DATA.meta.underlying_price;
             document.getElementById('h-gamma-flip').textContent = ts.gamma_flip ? '$' + ts.gamma_flip.toFixed(2) : 'N/A';
             document.getElementById('h-put-wall').textContent = ts.put_wall ? '$' + ts.put_wall : 'N/A';
             document.getElementById('h-call-wall').textContent = ts.call_wall ? '$' + ts.call_wall : 'N/A';
+
+            // Distance from current price to key levels
+            function formatDist(level) {
+                if (!level) return { text: '', color: '#888' };
+                const diff = level - price;
+                const pct = ((diff / price) * 100).toFixed(2);
+                const sign = diff >= 0 ? '+' : '';
+                const color = diff >= 0 ? '#009900' : '#cc0000';
+                return { text: '(' + sign + diff.toFixed(2) + ' / ' + sign + pct + '%)', color };
+            }
+            const gfDist = formatDist(ts.gamma_flip);
+            const pwDist = formatDist(ts.put_wall);
+            const cwDist = formatDist(ts.call_wall);
+            const gdEl = document.getElementById('h-gamma-dist');
+            gdEl.textContent = gfDist.text; gdEl.style.color = gfDist.color;
+            const pdEl = document.getElementById('h-put-dist');
+            pdEl.textContent = pwDist.text; pdEl.style.color = pwDist.color;
+            const cdEl = document.getElementById('h-call-dist');
+            cdEl.textContent = cwDist.text; cdEl.style.color = cwDist.color;
 
             // Expected move
             const be = DATA.be_bands;
