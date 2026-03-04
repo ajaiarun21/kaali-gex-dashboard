@@ -14,8 +14,8 @@
         body {
             background: #f0f0f0;
             font-family: 'Courier New', monospace;
-            font-size: 16px;
-            color: #000;
+            font-size: 12px;
+            color: #222;
             overflow-x: hidden;
         }
 
@@ -45,7 +45,7 @@
         .strike-table {
             flex: 0 0 auto;
             overflow-y: auto;
-            font-size: 18px;
+            font-size: 13px;
         }
 
         .strike-table table {
@@ -55,7 +55,7 @@
 
         .strike-table th {
             background: #d0d0d0;
-            padding: 5px 8px;
+            padding: 3px 5px;
             text-align: center;
             position: sticky;
             top: 0;
@@ -63,11 +63,11 @@
             border: 1px solid #999;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 14px;
+            font-size: 11px;
         }
 
         .strike-table td {
-            padding: 5px 10px;
+            padding: 2px 5px;
             text-align: right;
             border: 1px solid #ccc;
             white-space: nowrap;
@@ -161,7 +161,7 @@
 
         /* GEX sidebar */
         #gex-sidebar {
-            width: 70px;
+            width: 80px;
             background: #1a1a2e;
             border-left: 2px solid #666;
             overflow-y: auto;
@@ -295,7 +295,7 @@
 
     <div id="main-container">
         <!-- LEFT: Calls -->
-        <div class="strike-table" id="call-table-container" style="width: 420px;">
+        <div class="strike-table" id="call-table-container" style="width: 320px;">
             <table id="call-table">
                 <thead>
                     <tr>
@@ -331,7 +331,7 @@
         </div>
 
         <!-- RIGHT: Puts -->
-        <div class="strike-table" id="put-table-container" style="width: 440px;">
+        <div class="strike-table" id="put-table-container" style="width: 340px;">
             <table id="put-table">
                 <thead>
                     <tr>
@@ -716,55 +716,55 @@
                     ctx.fillRect(0, y, W, h);
                 });
 
-                // Gamma Flip line (thick yellow-orange)
+                // Gamma Flip line
                 if (ts.gamma_flip) {
                     const y = sToY(ts.gamma_flip);
-                    ctx.strokeStyle = '#cc6600';
-                    ctx.lineWidth = 4;
+                    ctx.strokeStyle = '#b85c00';
+                    ctx.lineWidth = 2.5;
                     ctx.setLineDash([8, 4]);
                     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
                     ctx.setLineDash([]);
-                    const gfText = '\u2190 GAMMA FLIP $' + ts.gamma_flip.toFixed(2);
-                    ctx.font = 'bold 15px Courier New';
+                    const gfText = 'GAMMA FLIP $' + ts.gamma_flip.toFixed(2);
+                    ctx.font = 'bold 12px Courier New';
                     const gfW = ctx.measureText(gfText).width;
-                    ctx.fillStyle = 'rgba(0,0,0,0.75)';
-                    ctx.fillRect(3, y - 18, gfW + 6, 20);
-                    ctx.fillStyle = '#ffaa00';
+                    ctx.fillStyle = 'rgba(30,20,10,0.8)';
+                    ctx.fillRect(4, y - 15, gfW + 8, 16);
+                    ctx.fillStyle = '#e8a030';
                     ctx.textAlign = 'left';
-                    ctx.fillText(gfText, 6, y - 3);
+                    ctx.fillText(gfText, 8, y - 3);
                 }
 
-                // Put Wall line (blue)
+                // Put Wall line
                 if (ts.put_wall) {
                     const y = sToY(ts.put_wall);
-                    ctx.strokeStyle = '#0055cc';
-                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#2060a0';
+                    ctx.lineWidth = 2;
                     ctx.setLineDash([6, 3]);
                     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
                     ctx.setLineDash([]);
                     const pwText = 'PUT WALL $' + ts.put_wall;
-                    ctx.font = 'bold 14px Courier New';
+                    ctx.font = 'bold 11px Courier New';
                     const pwW = ctx.measureText(pwText).width;
-                    ctx.fillStyle = 'rgba(0,0,0,0.75)';
-                    ctx.fillRect(3, y + 4, pwW + 6, 18);
-                    ctx.fillStyle = '#66bbff';
-                    ctx.fillText(pwText, 6, y + 18);
+                    ctx.fillStyle = 'rgba(10,20,40,0.8)';
+                    ctx.fillRect(4, y + 3, pwW + 8, 15);
+                    ctx.fillStyle = '#6ab0e0';
+                    ctx.fillText(pwText, 8, y + 14);
                 }
 
-                // Call Wall line (orange)
+                // Call Wall line
                 if (ts.call_wall) {
                     const y = sToY(ts.call_wall);
-                    ctx.strokeStyle = '#cc6600';
-                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#b85c00';
+                    ctx.lineWidth = 2;
                     ctx.setLineDash([6, 3]);
                     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
                     ctx.setLineDash([]);
                     const cwText = 'CALL WALL $' + ts.call_wall;
-                    ctx.font = 'bold 14px Courier New';
+                    ctx.font = 'bold 11px Courier New';
                     const cwW = ctx.measureText(cwText).width;
-                    ctx.fillStyle = 'rgba(0,0,0,0.75)';
-                    ctx.fillRect(W - cwW - 9, y - 18, cwW + 6, 18);
-                    ctx.fillStyle = '#ffaa00';
+                    ctx.fillStyle = 'rgba(30,20,10,0.8)';
+                    ctx.fillRect(W - cwW - 10, y - 15, cwW + 8, 15);
+                    ctx.fillStyle = '#e8a030';
                     ctx.textAlign = 'right';
                     ctx.fillText(cwText, W - 6, y - 4);
                     ctx.textAlign = 'left';
@@ -1107,78 +1107,78 @@
             const lvl2 = DATA.be_bands.levels || {};
             const sigma = DATA.be_bands.daily_sigma || 0;
 
-            // 50% range (dotted cyan) — 50% of moves stay within
+            // 50% range
             if (lvl2.p50_high) {
                 [lvl2.p50_high, lvl2.p50_low].forEach(s => {
                     const y = sToY(s);
-                    ctx.strokeStyle = '#0088cc'; ctx.lineWidth = 2.5; ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = '#1a7a7a'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
                     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
                     ctx.setLineDash([]);
                     const txt = s.toFixed(2) + ' 50%';
-                    ctx.font = 'bold 13px Courier New'; ctx.textAlign = 'right';
+                    ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'right';
                     const tw = ctx.measureText(txt).width;
-                    const ty = y + (s > price ? -6 : 16);
-                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                    ctx.fillRect(W - tw - 10, ty - 13, tw + 6, 17);
-                    ctx.fillStyle = '#44ddff';
+                    const ty = y + (s > price ? -5 : 14);
+                    ctx.fillStyle = 'rgba(10,30,30,0.8)';
+                    ctx.fillRect(W - tw - 10, ty - 11, tw + 8, 14);
+                    ctx.fillStyle = '#70c8c8';
                     ctx.fillText(txt, W - 7, ty);
                 });
             }
 
-            // 25% range (dotted gold) — 75% of moves stay within, 25% exceed
+            // 25% range
             if (sigma > 0) {
-                const z25 = 1.150; // z-score for 75% containment (25% tail)
+                const z25 = 1.150;
                 const p25_high = price + z25 * sigma;
                 const p25_low = price - z25 * sigma;
                 [p25_high, p25_low].forEach(s => {
                     const y = sToY(s);
-                    ctx.strokeStyle = '#cc8800'; ctx.lineWidth = 2.5; ctx.setLineDash([6, 3]);
+                    ctx.strokeStyle = '#997700'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 3]);
                     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
                     ctx.setLineDash([]);
                     const txt = s.toFixed(2) + ' 25%';
-                    ctx.font = 'bold 13px Courier New'; ctx.textAlign = 'right';
+                    ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'right';
                     const tw = ctx.measureText(txt).width;
-                    const ty = y + (s > price ? -6 : 16);
-                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                    ctx.fillRect(W - tw - 10, ty - 13, tw + 6, 17);
-                    ctx.fillStyle = '#ffcc44';
+                    const ty = y + (s > price ? -5 : 14);
+                    ctx.fillStyle = 'rgba(30,20,5,0.8)';
+                    ctx.fillRect(W - tw - 10, ty - 11, tw + 8, 14);
+                    ctx.fillStyle = '#d4a840';
                     ctx.fillText(txt, W - 7, ty);
                 });
             }
 
-            // 80% range (dotted magenta)
+            // 80% range
             if (lvl2.p80_high) {
                 [lvl2.p80_high, lvl2.p80_low].forEach(s => {
                     const y = sToY(s);
-                    ctx.strokeStyle = '#dd00dd'; ctx.lineWidth = 2.5; ctx.setLineDash([6, 4]);
+                    ctx.strokeStyle = '#9930a0'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
                     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
                     ctx.setLineDash([]);
                     const txt = s.toFixed(2) + ' 80%';
-                    ctx.font = 'bold 13px Courier New'; ctx.textAlign = 'right';
+                    ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'right';
                     const tw = ctx.measureText(txt).width;
-                    const ty = y + (s > price ? -6 : 16);
-                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                    ctx.fillRect(W - tw - 10, ty - 13, tw + 6, 17);
-                    ctx.fillStyle = '#ff66ff';
+                    const ty = y + (s > price ? -5 : 14);
+                    ctx.fillStyle = 'rgba(25,10,30,0.8)';
+                    ctx.fillRect(W - tw - 10, ty - 11, tw + 8, 14);
+                    ctx.fillStyle = '#c880d0';
                     ctx.fillText(txt, W - 7, ty);
                 });
             }
 
-            // 1% range (dotted dark red) — 99% of moves stay within, extreme tails
+            // 1% range — extreme tails
             if (lvl2.p99_high) {
                 [lvl2.p99_high, lvl2.p99_low].forEach(s => {
                     const y = sToY(s);
                     if (y >= topPad && y <= H - bottomPad) {
-                        ctx.strokeStyle = '#cc0000'; ctx.lineWidth = 2.5; ctx.setLineDash([8, 4]);
+                        ctx.strokeStyle = '#993333'; ctx.lineWidth = 1.5; ctx.setLineDash([8, 4]);
                         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
                         ctx.setLineDash([]);
                         const txt = s.toFixed(2) + ' 1%';
-                        ctx.font = 'bold 13px Courier New'; ctx.textAlign = 'right';
+                        ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'right';
                         const tw = ctx.measureText(txt).width;
-                        const ty = y + (s > price ? -6 : 16);
-                        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                        ctx.fillRect(W - tw - 10, ty - 13, tw + 6, 17);
-                        ctx.fillStyle = '#ff6666';
+                        const ty = y + (s > price ? -5 : 14);
+                        ctx.fillStyle = 'rgba(30,10,10,0.8)';
+                        ctx.fillRect(W - tw - 10, ty - 11, tw + 8, 14);
+                        ctx.fillStyle = '#d07070';
                         ctx.fillText(txt, W - 7, ty);
                     }
                 });
